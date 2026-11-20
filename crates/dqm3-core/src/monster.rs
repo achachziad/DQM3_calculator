@@ -26,6 +26,9 @@ pub struct Monster {
     /// In-game number (1–526). `None` for the 80 "family + rank" rules
     /// such as "Slime Family (G)", which are not real monsters.
     pub number: Option<u32>,
+    /// Stable key, e.g. "slime" or "goonache-goodie". The GUI maps it to
+    /// the portrait `data/Sprites/<identifier>-thumb.png`.
+    pub identifier: String,
     pub name_en: String,
     /// `None` for the 3 expired event monsters.
     pub name_fr: Option<String>,
@@ -51,6 +54,7 @@ struct RawMonster {
     family_id: FamilyId,
     rank_id: RankId,
     number: Option<u32>,
+    identifier: String,
     name: String,
     french_name: Option<String>,
     #[serde(rename = "MaxHP")]
@@ -87,6 +91,7 @@ impl From<RawMonster> for Monster {
         Monster {
             id: raw.monster_id,
             number: raw.number,
+            identifier: raw.identifier,
             name_en: raw.name,
             name_fr: raw.french_name,
             family: raw.family_id,
@@ -136,6 +141,7 @@ mod tests {
         assert_eq!(slime.id, MonsterId(1));
         assert_eq!(slime.number, Some(1));
         assert_eq!(slime.name_en, "Slime");
+        assert_eq!(slime.identifier, "slime");
         assert_eq!(slime.name_fr.as_deref(), Some("Gluant"));
         assert_eq!(slime.family, FamilyId(1));
         assert_eq!(slime.rank, RankId(1));

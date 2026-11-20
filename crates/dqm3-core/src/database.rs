@@ -8,7 +8,7 @@ use crate::ids::{
 };
 use crate::index::MonsterIndex;
 use crate::load::group_by;
-use crate::location::{Recruitment, parse_recruitments};
+use crate::location::{Recruitment, RecruitmentPlace, group_by_place, parse_recruitments};
 use crate::monster::{Monster, parse_monsters};
 use crate::named::{
     Location, Named, Season, Size, Weather, parse_locations, parse_seasons, parse_sizes,
@@ -219,6 +219,12 @@ impl Database {
     /// only obtained by synthesis or eggs.
     pub fn recruitments(&self, id: MonsterId) -> &[Recruitment] {
         group(&self.recruitments_by_monster, &id)
+    }
+
+    /// The same, grouped by place: one entry per location with its
+    /// seasons and weathers. What a monster sheet shows.
+    pub fn recruitment_places(&self, id: MonsterId) -> Vec<RecruitmentPlace> {
+        group_by_place(self.recruitments(id))
     }
 
     pub fn location(&self, id: LocationId) -> Option<&Location> {
@@ -544,6 +550,22 @@ mod tests {
         let barracuda = monster_named(&db, "Barracuda");
         assert!(db.recruitments(barracuda.id).is_empty());
         assert!(db.recipes_for(barracuda.id).is_empty());
+    }
+
+    #[test]
+    fn recruitment_places_group_the_rows() {
+        let db = Database::load().expect("embedded data is valid");
+        let total_places: usize = db
+            .monsters()
+            .iter()
+            .map(|m| db.recruitment_places(m.id).len())
+            .sum();
+        assert_eq!(total_places, 469, "figure from docs/DATA.md §1.6");
+
+        let slime = monster_named(&db, "Gluant");
+        let places = db.recruitment_places(slime.id);
+        assert!(!places.is_empty());
+        assert!(places.len() < db.recruitments(slime.id).len());
     }
 
     #[test]

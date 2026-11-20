@@ -1,0 +1,11 @@
+[package]
+name = "dqm3-gui"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dqm3-core = { version = "0.1.0", path = "../dqm3-core" }
+eframe = { version = "0.37", default-features = false, features = ["glow", "default_fonts"] }
+egui = { version = "0.37", default-features = false, features = ["monochrome_emoji_fonts"] }
+egui_extras = { version = "0.37", default-features = false, features = ["image"] }
+image = { version = "0.25", default-features = false, features = ["png"] }

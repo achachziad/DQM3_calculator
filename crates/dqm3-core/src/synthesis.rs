@@ -54,6 +54,7 @@ mod tests {
         Monster {
             id: MonsterId(id),
             number,
+            identifier: format!("m{id}"),
             name_en: format!("m{id}"),
             name_fr: None,
             family: FamilyId(family),

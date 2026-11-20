@@ -22,7 +22,7 @@ pub use error::CoreError;
 pub use family::{Family, Rank};
 pub use ids::{FamilyId, MonsterId, RankId};
 pub use ids::{LocationId, SeasonId, SizeId, SkillId, TalentId, TraitId, WeatherId};
-pub use location::Recruitment;
+pub use location::{Recruitment, RecruitmentPlace};
 pub use monster::{Monster, Stats};
 pub use named::{Location, Named, Season, Size, Weather};
 pub use recipe::{Parents, Recipe};

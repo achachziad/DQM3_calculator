@@ -1,0 +1,59 @@
+# Checks the code and builds the Windows executable.
+# - every push / pull request: fmt, clippy, tests, release build,
+#   and the .exe is attached to the run (tab "Actions" > run > Artifacts);
+# - a tag "v*" (e.g. v0.1.0): same, plus a GitHub Release with the .exe.
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch: # "Run workflow" button in the Actions tab
+
+permissions:
+  contents: write # needed only to create the Release on tags
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      # The game data (JSON + sprites) is the `data/` submodule; it is
+      # embedded at compile time, so the build needs it. fetch-depth 1
+      # also makes the submodule clone shallow (~550 MB, mostly images).
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 1
+
+      - name: Install Rust (stable + clippy + rustfmt)
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustup component add clippy rustfmt
+
+      # Caches ~/.cargo and target/ between runs: much faster rebuilds.
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Tests
+        run: cargo test --workspace
+
+      - name: Build release
+        run: cargo build --release -p dqm3-gui
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dqm3-gui-windows
+          path: target/release/dqm3-gui.exe
+
+      - name: GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" target/release/dqm3-gui.exe --generate-notes --title "${{ github.ref_name }}"

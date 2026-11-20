@@ -9,7 +9,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Existe : workspace Cargo, `crates/dqm3-import`, `crates/dqm3-core` (phases 1
 et 2a faites : 18 tables MetalKid embarquées, `Database` = point d'entrée
 unique, `search_monsters`, `children_of`), `data/` (sous-module),
-`docs/DATA.md`, `README.md` (crédits). **Pas encore** : `dqm3-gui`, `dqm3-mcp`.
+`crates/dqm3-gui` (egui 0.37, rendu glow, portraits embarqués par
+`build.rs`), `docs/DATA.md`, `README.md` (crédits),
+`.github/workflows/build.yml` (CI Windows : fmt, clippy, tests, `.exe` en
+artefact ; Release GitHub sur tag `v*`). **Pas encore** : `dqm3-mcp`.
+
+### Interface (dqm3-gui)
+
+- **Images d'abord, noms ensuite** : portraits (`data/Sprites`), symboles de
+  famille/saison/météo (`data/Misc`) ; le nom EN est secondaire (gris).
+- Thème clair « parchemin + bleu marine » proche des menus du jeu (`theme.rs`).
+- egui 0.37 : `App::ui` (pas `update`), `Panel::left` (plus de `SidePanel`).
+  Les polices emoji sont une option (`monochrome_emoji_fonts`) : vérifier qu'un
+  symbole existe dans la police avant de l'utiliser (sinon carré vide).
+- Aucune règle de jeu dans la GUI : tout passe par `Database`.
 Nouveau crate : `cargo new --vcs none` (sinon `.git` imbriqué).
 L'arborescence ci-dessous est la **cible** ; vérifie ce qui existe avant d'agir.
 La racine du workspace est la racine du dépôt (`DQM3_calculator/`).
@@ -189,6 +202,7 @@ warning, `cargo test` vert.
 - [x] **Phase 2a** — `dqm3-core` : recherche, filtres, tris, recettes,
       synthèse inversée (+ tests). Pas de filtre « taille » : les données
       n'ont pas de taille propre à chaque monstre (traits S et L pour tous).
-- [ ] **Phase 2b** — `dqm3-gui` : liste filtrable + fiche monstre
+- [x] **Phase 2b** — `dqm3-gui` : liste filtrable + fiche monstre
+      (première version ; retours visuels de l'utilisateur à intégrer)
 - [ ] **Phase 3** — `dqm3-mcp` + branchement Claude Desktop
 - [ ] **Phase 4** — V2 (arbre complet, planificateur de talents)

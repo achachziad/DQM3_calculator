@@ -19,6 +19,17 @@ cargo build
 cargo test
 ```
 
+Run the calculator (release build: smaller, faster, no console window):
+
+```bash
+cargo run --release -p dqm3-gui
+```
+
+Or download `dqm3-gui.exe` (Windows, standalone) from the
+[Releases](https://github.com/achachziad/DQM3_calculator/releases) page, or
+from the latest run of the `build` workflow (Actions tab > Artifacts).
+To publish a release: `git tag v0.1.0 && git push origin v0.1.0`.
+
 Optional, manual: import French talent names (network, see `docs/DATA.md`):
 
 ```bash

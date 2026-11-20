@@ -105,6 +105,11 @@ exactly 6 traits, Small at levels 1/20/40 and Large at levels 1/1/60.
 (Sun / Precipitation), `Size` (2), items and eggs.
 Only 213 monsters are found in the wild.
 
+**Monster portraits**: `data/Sprites/<Identifier>-thumb.png`, 75×75 PNG,
+one for each of the 526 real monsters (~6 MB), embedded by
+`crates/dqm3-gui/build.rs`. `data/MonsterImages/` (2104 JPG, 42 MB, mostly
+empty background) is not used.
+
 **French names missing from MetalKid** (displayed in English for now):
 skills, traits, locations, seasons, weathers, sizes. Talents come from
 `data-fr/` (not embedded); families are hard-coded (see below).

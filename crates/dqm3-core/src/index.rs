@@ -97,6 +97,7 @@ mod tests {
         Monster {
             id: MonsterId(id),
             number,
+            identifier: format!("m{id}"),
             name_en: en.into(),
             name_fr: fr.map(Into::into),
             family: FamilyId(1),

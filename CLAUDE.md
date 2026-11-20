@@ -6,8 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## État actuel du dépôt
 
-Existe : workspace Cargo, `crates/dqm3-import`, `data/` (sous-module),
-`docs/DATA.md`, `README.md` (crédits). **Pas encore** : `dqm3-core`, `dqm3-gui`, `dqm3-mcp`.
+Existe : workspace Cargo, `crates/dqm3-import`, `crates/dqm3-core` (phase 1
+en cours : erreurs, ids, monstres, `Database`), `data/` (sous-module),
+`docs/DATA.md`, `README.md` (crédits). **Pas encore** : `dqm3-gui`, `dqm3-mcp`.
+Nouveau crate : `cargo new --vcs none` (sinon `.git` imbriqué).
 L'arborescence ci-dessous est la **cible** ; vérifie ce qui existe avant d'agir.
 La racine du workspace est la racine du dépôt (`DQM3_calculator/`).
 

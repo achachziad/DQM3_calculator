@@ -15,6 +15,8 @@ use crate::named::{
     parse_weathers,
 };
 use crate::recipe::{Recipe, parse_recipes};
+use crate::search::{MonsterQuery, search};
+use crate::synthesis::children_of;
 use crate::talent::{
     MonsterTalent, Skill, Talent, TalentEvolution, parse_monster_talents, parse_skills,
     parse_talent_evolutions, parse_talents,
@@ -281,6 +283,33 @@ impl Database {
     pub fn monsters(&self) -> &[Monster] {
         &self.monsters
     }
+
+    // ---------- Queries ----------
+
+    /// Searches monsters: text (French or English, partial, without
+    /// accents), filters and sort. See `MonsterQuery`.
+    pub fn search_monsters(&self, query: &MonsterQuery) -> Vec<&Monster> {
+        search(&self.monsters, |id| self.monster_talents(id), query)
+    }
+
+    /// Reverse synthesis: the recipes in which this monster can be used,
+    /// directly or through a "family + rank" rule, sorted by the number of
+    /// the monster they create. Empty for an unknown id.
+    pub fn children_of(&self, id: MonsterId) -> Vec<&Recipe> {
+        let Some(monster) = self.monster(id) else {
+            return Vec::new();
+        };
+        let wildcard_rank = self.ranks.iter().find(|r| r.is_wildcard()).map(|r| r.id);
+        let all_recipes = self.recipes_by_result.values().flatten();
+
+        let mut children = children_of(monster, all_recipes, |id| self.monster(id), wildcard_rank);
+        // `sort_by_key` with a tuple: number first (none last), then id.
+        children.sort_by_key(|r| {
+            let number = self.monster(r.result).and_then(|m| m.number);
+            (number.is_none(), number, r.result)
+        });
+        children
+    }
 }
 
 #[cfg(test)]
@@ -543,6 +572,48 @@ mod tests {
         for evolution in &db.talent_evolutions {
             assert!(db.talent(evolution.result).is_some());
         }
+    }
+
+    #[test]
+    fn search_on_real_data() {
+        let db = Database::load().expect("embedded data is valid");
+        assert_eq!(db.search_monsters(&MonsterQuery::default()).len(), 526);
+
+        let query = MonsterQuery {
+            text: "methanosaure".into(),
+            ..Default::default()
+        };
+        let found: Vec<&str> = db
+            .search_monsters(&query)
+            .iter()
+            .map(|m| m.name_en.as_str())
+            .collect();
+        assert_eq!(found, ["Airbagon"]);
+
+        let doomsayer = talent_named(&db, "Doomsayer");
+        let query = MonsterQuery {
+            talent: Some(doomsayer.id),
+            ..Default::default()
+        };
+        assert_eq!(db.search_monsters(&query).len(), 4);
+    }
+
+    #[test]
+    fn reverse_synthesis_on_real_data() {
+        let db = Database::load().expect("embedded data is valid");
+        let slime = monster_named(&db, "Gluant");
+        let wing = monster_named(&db, "Wing Slime");
+        let children = db.children_of(slime.id);
+        // Wing Slime = Slime Family (G) + Dragon Family (G): Slime fits.
+        assert!(children.iter().any(|r| r.result == wing.id));
+
+        let numbers: Vec<Option<u32>> = children
+            .iter()
+            .map(|r| db.monster(r.result).and_then(|m| m.number))
+            .collect();
+        assert!(numbers.is_sorted(), "sorted by number of the result");
+
+        assert!(db.children_of(MonsterId(999_999)).is_empty());
     }
 
     #[test]

@@ -12,6 +12,8 @@ mod location;
 mod monster;
 mod named;
 mod recipe;
+mod search;
+mod synthesis;
 mod talent;
 mod traits;
 
@@ -24,5 +26,6 @@ pub use location::Recruitment;
 pub use monster::{Monster, Stats};
 pub use named::{Location, Named, Season, Size, Weather};
 pub use recipe::{Parents, Recipe};
+pub use search::{MonsterQuery, SortKey, Stat, fold};
 pub use talent::{MonsterTalent, Reward, Skill, Talent, TalentEvolution, TalentTier};
 pub use traits::{MonsterTrait, Trait};

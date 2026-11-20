@@ -6,8 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## État actuel du dépôt
 
-Existe : workspace Cargo, `crates/dqm3-import`, `crates/dqm3-core` (phase 1
-faite : 18 tables MetalKid embarquées, `Database` = point d'entrée unique), `data/` (sous-module),
+Existe : workspace Cargo, `crates/dqm3-import`, `crates/dqm3-core` (phases 1
+et 2a faites : 18 tables MetalKid embarquées, `Database` = point d'entrée
+unique, `search_monsters`, `children_of`), `data/` (sous-module),
 `docs/DATA.md`, `README.md` (crédits). **Pas encore** : `dqm3-gui`, `dqm3-mcp`.
 Nouveau crate : `cargo new --vcs none` (sinon `.git` imbriqué).
 L'arborescence ci-dessous est la **cible** ; vérifie ce qui existe avant d'agir.
@@ -185,8 +186,9 @@ warning, `cargo test` vert.
       appariés, 239 paliers identiques (voir `docs/DATA.md` §2.5).
       Corrections manuelles dans `crates/dqm3-import/src/manual.rs`.
 - [x] **Phase 1** — `dqm3-core` : modèles + chargement + index (+ tests)
-- [ ] **Phase 2a** — `dqm3-core` : recherche, filtres, tris, recettes,
-      synthèse inversée (+ tests)
+- [x] **Phase 2a** — `dqm3-core` : recherche, filtres, tris, recettes,
+      synthèse inversée (+ tests). Pas de filtre « taille » : les données
+      n'ont pas de taille propre à chaque monstre (traits S et L pour tous).
 - [ ] **Phase 2b** — `dqm3-gui` : liste filtrable + fiche monstre
 - [ ] **Phase 3** — `dqm3-mcp` + branchement Claude Desktop
 - [ ] **Phase 4** — V2 (arbre complet, planificateur de talents)

@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## État actuel du dépôt
 
-Le dépôt ne contient encore **que ce fichier** : pas de `Cargo.toml`, pas de
-crates, pas de `data/`. L'arborescence ci-dessous est la **cible**, pas
-l'existant. Vérifie ce qui existe vraiment avant d'agir.
+Existe : workspace Cargo, `crates/dqm3-import`, `data/` (sous-module),
+`docs/DATA.md`, `README.md` (crédits). **Pas encore** : `dqm3-core`, `dqm3-gui`, `dqm3-mcp`.
+L'arborescence ci-dessous est la **cible** ; vérifie ce qui existe avant d'agir.
 La racine du workspace est la racine du dépôt (`DQM3_calculator/`).
 
 ## Contexte
@@ -36,21 +36,24 @@ traits) quand tu les utilises.
   Évite les dépendances lourdes. Justifie chaque nouvelle crate.
 - **Windows** en priorité.
 - **Local uniquement** pour l'instant (pas de serveur distant, pas de réseau).
+  Seule exception : `dqm3-import`, outil lancé **à la main**, jamais par l'appli.
 
 ## Architecture
 
 Workspace Cargo, **un cœur + des adaptateurs fins** :
 
 ```
-dqm3/
+DQM3_calculator/
 ├── Cargo.toml          # workspace
 ├── crates/
 │   ├── dqm3-core/      # lib : modèles, chargement, index, requêtes
 │   ├── dqm3-gui/       # bin : calculateur egui (eframe)
-│   └── dqm3-mcp/       # bin : serveur MCP (phase 3)
-├── data/               # JSON de MetalKid (voir « Données »)
+│   ├── dqm3-mcp/       # bin : serveur MCP (phase 3)
+│   └── dqm3-import/    # bin : import manuel des noms FR des talents (réseau)
+├── data/               # sous-module git MetalKid ; JSON dans data/data/json/raw/
+├── data-fr/            # généré par dqm3-import, ignoré par git
 └── docs/
-    └── DATA.md         # schéma des données, documenté en phase 0
+    └── DATA.md         # schéma des données (LIRE avant de toucher aux modèles)
 ```
 
 ### Règles d'architecture (non négociables)
@@ -62,6 +65,8 @@ dqm3/
   par MCP. Jamais de logique dupliquée.
   - Exemple : l'outil MCP `search_monsters` appelle `core::search_monsters()`.
 - `dqm3-core` : pas de `unwrap()` / `expect()` hors tests. Erreurs typées.
+- `dqm3-import` est **hors de l'appli** : ni `dqm3-core` ni `dqm3-gui` ne
+  dépendent de lui ni de `ureq`. Le cœur ne lit que ses **fichiers de sortie**.
 
 ## Stack
 
@@ -71,6 +76,7 @@ dqm3/
 | GUI | `eframe` / `egui` | ✅ |
 | Désérialisation | `serde`, `serde_json` | ✅ |
 | MCP | `rmcp` (SDK officiel, 2.x) | ⏳ phase 3 |
+| HTTP (`dqm3-import` seulement) | `ureq` 3 (bloquant, sans runtime async) | ✅ |
 | Tests | `cargo test` | ✅ |
 
 ⚠️ **Les API d'egui et de rmcp évoluent vite.** Avant de les utiliser :
@@ -79,20 +85,22 @@ vérifie la version réellement installée et sa documentation.
 
 ## Données
 
-- Source : **github.com/MetalKid/DQM3_Database** (licence **MIT**).
-- L'auteur demande d'être **crédité** → le README doit le mentionner.
-- Contient : monstres, talents, traits, lieux, **arbres de synthèse**,
-  et les **noms français**.
-- **Le format exact n'est pas encore connu.**
-  → Phase 0 : explorer `data/`, documenter dans `docs/DATA.md`,
-  **puis seulement** écrire les modèles.
-- Points à vérifier en phase 0 :
-  - où sont les **noms FR** (monstres ET talents) ;
-  - format des **recettes** (monstre précis vs règle « famille + rang ») ;
-  - **évolutions de talents** (ex. Chilly Receptionist → Frosty Receptionist) ;
-  - talents **fixes vs aléatoires** d'un monstre.
-- Chargement envisagé : `include_str!` (données dans l'exe).
-  À confirmer selon la taille des fichiers.
+Détail complet dans **`docs/DATA.md`**. L'essentiel :
+
+- **MetalKid** (`data/`, sous-module, licence **MIT**, crédit requis dans le
+  README) : monstres, talents, traits, lieux, recettes. Charger les
+  **`raw/`** (tables liées par id), pas les `computed/`. Fichiers en UTF-8
+  **avec BOM**. JSON ≈ 3,7 Mo → `include_str!` OK.
+- **Noms FR** : monstres seulement chez MetalKid (`FrenchName`). Les
+  **talents FR** viennent de **wikidragonquest.fr** via `dqm3-import`, à
+  partir de la page « Liste des talents de DQM3 » (241 talents). Le **nom
+  en jeu = libellé de la liste** (`Espoir de Flamme`), pas le titre de la
+  page (`Apprenti de Flamme`, gardé en alias `fr_page`).
+  Licence du wiki non précisée → `data-fr/` ignoré par git, **pas embarqué**
+  tant que ce n'est pas clarifié.
+- Pièges : 80 « monstres » sans `Number` = règles « famille + rang »
+  (`Slime Family (G)`) ; recettes à 2 parents **ou** 4 grands-parents ;
+  `IsPrimary` = talent fixe (3 anomalies dans la source).
 
 ## Fonctionnalités
 
@@ -155,16 +163,25 @@ cargo test -p dqm3-core         # cœur uniquement
 cargo test -p dqm3-core accent  # tests dont le nom contient « accent »
 cargo test -p dqm3-core -- --exact search::tests::finds_by_fr_name  # un test précis
 cargo run -p dqm3-gui           # lancer le calculateur
+cargo run -p dqm3-import        # MANUEL, réseau : seulement à la demande de l'utilisateur
 cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt
+git submodule update --init     # si data/ est vide après un clone
 ```
+
+Ne lance **jamais** `dqm3-import` (ni de requête vers wikidragonquest.fr)
+sans accord explicite : serveur mutualisé fragile (508 fréquents). Les tests
+de `dqm3-import` sont hors ligne.
 
 **Avant de dire « terminé »** : `cargo fmt`, `cargo clippy` sans
 warning, `cargo test` vert.
 
 ## Roadmap
 
-- [ ] **Phase 0** — Explorer `data/`, écrire `docs/DATA.md`
+- [x] **Phase 0** — Explorer `data/`, écrire `docs/DATA.md`
+- [x] **Phase 0b** — Import des talents FR (`dqm3-import`) : 241/241
+      appariés, 239 paliers identiques (voir `docs/DATA.md` §2.5).
+      Corrections manuelles dans `crates/dqm3-import/src/manual.rs`.
 - [ ] **Phase 1** — `dqm3-core` : modèles + chargement + index (+ tests)
 - [ ] **Phase 2a** — `dqm3-core` : recherche, filtres, tris, recettes,
       synthèse inversée (+ tests)

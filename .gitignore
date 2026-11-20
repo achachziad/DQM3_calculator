@@ -1,0 +1,5 @@
+/target/
+
+# French data imported from wikidragonquest.fr: license not stated yet,
+# kept local only (see docs/DATA.md).
+/data-fr/

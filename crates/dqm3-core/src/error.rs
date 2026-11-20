@@ -15,6 +15,21 @@ pub enum CoreError {
         /// The underlying error from `serde_json`.
         source: serde_json::Error,
     },
+    /// Two different entries share a key that must be unique (an id, a
+    /// number or a name), so a lookup would be ambiguous.
+    DuplicateKey {
+        /// What kind of key, e.g. "monster name".
+        kind: &'static str,
+        key: String,
+    },
+    /// A row is valid JSON but makes no sense (e.g. a recipe with both
+    /// parents and grandparents).
+    InvalidRow {
+        file: &'static str,
+        /// The row's own id in that file.
+        row_id: u32,
+        reason: &'static str,
+    },
 }
 
 /// `Display` is the trait behind `{}` in `format!`/`println!`:
@@ -25,6 +40,14 @@ impl fmt::Display for CoreError {
             CoreError::Parse { file, source } => {
                 write!(f, "invalid data file {file}: {source}")
             }
+            CoreError::DuplicateKey { kind, key } => {
+                write!(f, "duplicate {kind}: {key}")
+            }
+            CoreError::InvalidRow {
+                file,
+                row_id,
+                reason,
+            } => write!(f, "invalid row {row_id} in {file}: {reason}"),
         }
     }
 }
@@ -35,6 +58,7 @@ impl std::error::Error for CoreError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             CoreError::Parse { source, .. } => Some(source),
+            CoreError::DuplicateKey { .. } | CoreError::InvalidRow { .. } => None,
         }
     }
 }

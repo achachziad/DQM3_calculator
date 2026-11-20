@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## État actuel du dépôt
 
 Existe : workspace Cargo, `crates/dqm3-import`, `crates/dqm3-core` (phase 1
-en cours : erreurs, ids, monstres, `Database`), `data/` (sous-module),
+faite : 18 tables MetalKid embarquées, `Database` = point d'entrée unique), `data/` (sous-module),
 `docs/DATA.md`, `README.md` (crédits). **Pas encore** : `dqm3-gui`, `dqm3-mcp`.
 Nouveau crate : `cargo new --vcs none` (sinon `.git` imbriqué).
 L'arborescence ci-dessous est la **cible** ; vérifie ce qui existe avant d'agir.
@@ -184,7 +184,7 @@ warning, `cargo test` vert.
 - [x] **Phase 0b** — Import des talents FR (`dqm3-import`) : 241/241
       appariés, 239 paliers identiques (voir `docs/DATA.md` §2.5).
       Corrections manuelles dans `crates/dqm3-import/src/manual.rs`.
-- [ ] **Phase 1** — `dqm3-core` : modèles + chargement + index (+ tests)
+- [x] **Phase 1** — `dqm3-core` : modèles + chargement + index (+ tests)
 - [ ] **Phase 2a** — `dqm3-core` : recherche, filtres, tris, recettes,
       synthèse inversée (+ tests)
 - [ ] **Phase 2b** — `dqm3-gui` : liste filtrable + fiche monstre

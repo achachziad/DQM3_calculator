@@ -45,6 +45,17 @@ even accent-stripped, nor with another monster's EN name. 27 monsters have
 FR = EN.
 
 Ranks: `G F E D C B A S X` + `Any` (rank wildcard for placeholders).
+`RankId` follows the game order (G = 1 … X = 9, Any = 10).
+
+**Family symbols** (shown in game instead of the family name):
+`data/Misc/<Identifier>.png`, 24×24, ~1.5 KB each, where `Identifier` comes
+from `Family.json`: `slime dragon nature beast material demon undead boss`
+(`boss` = "???"). The core only exposes `Family::identifier`; the GUI embeds
+the 8 PNG files (`include_bytes!`).
+
+**French family names**: not in MetalKid. Hard-coded in
+`crates/dqm3-core/src/family.rs` (`FAMILY_NAMES_FR`), checked in game:
+Gluant, Dragon, Nature, Bête, Matériel, Démon, Mort-vivant, ???.
 
 ### 1.2 Recipes — `raw/MonsterSynthesis.json` (714 rows)
 
@@ -86,11 +97,17 @@ Ranks: `G F E D C B A S X` + `Any` (rank wildcard for placeholders).
 
 ### 1.4 Other tables
 
-`MonsterTrait` (with `SizeId` and `UnlockLevel`), `Trait`, `Skill`,
+`MonsterTrait` (with `SizeId` and `UnlockLevel`): **every** monster has
+exactly 6 traits, Small at levels 1/20/40 and Large at levels 1/1/60.
+`Trait`, `Skill`,
 `MonsterResistance`, `MonsterLocation` (`LocationId`, `SeasonId`,
 `WeatherId`, `IsMiniBoss`), `Location`, `Season` (4), `Weather`
 (Sun / Precipitation), `Size` (2), items and eggs.
 Only 213 monsters are found in the wild.
+
+**French names missing from MetalKid** (displayed in English for now):
+skills, traits, locations, seasons, weathers, sizes. Talents come from
+`data-fr/` (not embedded); families are hard-coded (see below).
 
 ### 1.5 Integrity
 
